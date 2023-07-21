@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+</html>
+<html>
+<!-- Abhishek Sihag -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+
+
+  <div class="container">
+    <h1>To-Do List</h1>
+    <div class="todo-container">
+      <input type="text" id="todo-input" placeholder="Add a new task" />
+      <button id="add-button">Add</button>
+      <ul id="todo-list"></ul>
+    </div>
+  </div>
+
+  <script>
+
+    const todoInput = document.getElementById('todo-input');
+    const addButton = document.getElementById('add-button');
+    const todoList = document.getElementById('todo-list');
+
+    let todos = [];
+
+    // Function to load tasks from local storage or fetch API data
+    function loadTodos() {
+      const storedTodos = localStorage.getItem('todos');
+      if (storedTodos) {
+        todos = JSON.parse(storedTodos);
+        renderTodoList();
+      } else {
+        fetchTodoData();
+      }
+    }
+
+    // Function for Saving the tasks to local storage
+    function saveTodos() {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+
+    // function to render the list
+    function renderTodoList() {
+      todoList.innerHTML = '';
+      todos.forEach((todo, index) => {
+        const listItem = createTodoListItem(todo, index);
+        todoList.appendChild(listItem);
+      });
+    }
+
+    function createTodoListItem(todo, index) {
+      const listItem = document.createElement('li');
+      listItem.className = 'todo-item';
+
+      const todoNumber = document.createElement('span');
+      todoNumber.className = 'todo-number';
+      todoNumber.innerText = `${index + 1}.`;
+
+      const todoInput = document.createElement('input');
+      todoInput.type = 'text';
+      todoInput.value = todo.title;
+      todoInput.disabled = true;
+
+      const deleteButton = document.createElement('button');
+      deleteButton.innerHTML = 'Delete';
+      deleteButton.className = 'delete-button';
+      deleteButton.addEventListener('click', () => deleteTodoItem(index));
+
+      const editButton = document.createElement('button');
+      editButton.innerHTML = 'Edit';
+      editButton.className = 'edit-button';
+      editButton.addEventListener('click', () => enableEdit(index));
+
+      listItem.appendChild(todoNumber);
+      listItem.appendChild(todoInput);
+      listItem.appendChild(editButton);
+      listItem.appendChild(deleteButton);
+
+      return listItem;
+    }
+
+    // Function to fetch the API data
+    function fetchTodoData() {
+      fetch('https://jsonplaceholder.typicode.com/todos')
+        .then(response => response.json())
+        .then(apiData => {
+          const apiDataFiltered = apiData.filter(apiTodo => {
+            // Check if API data already exists in the locally stored tasks
+            return !todos.some(todo => todo.id === apiTodo.id);
+          });
+
+          todos = [...todos, ...apiDataFiltered];
+          saveTodos();
+          renderTodoList();
+        })
+        .catch(error => {
+          console.log('Error fetching todo data:', error);
+        });
+    }
+
+    // Function to add task to list
+    function addTodoItem() {
+      const todoText = todoInput.value.trim();
+      if (todoText) {
+        const newTodo = { id: generateUniqueId(), title: todoText };
+        todos.push(newTodo);
+        saveTodos();
+
+        const listItem = createTodoListItem(newTodo, todos.length - 1);
+        todoList.appendChild(listItem);
+
+        todoInput.value = '';
+      }
+    }
+
+    // Function to delete tasks from list
+    function deleteTodoItem(index) {
+      todos.splice(index, 1);
+      saveTodos();
+      renderTodoList();
+    }
+
+    // Function to edit the task
+    function enableEdit(index) {
+      const listItem = todoList.children[index];
+      const todoItem = listItem.querySelector('input[type="text"]');
+      todoItem.disabled = false;
+      todoItem.focus();
+
+      const editButton = listItem.querySelector('.edit-button');
+      editButton.innerHTML = 'Save';
+      editButton.removeEventListener('click', () => enableEdit(index));
+      editButton.addEventListener('click', () => saveTodoItem(index));
+    }
+
+    // function to save the edited task
+    function saveTodoItem(index) {
+      const listItem = todoList.children[index];
+      const todoItem = listItem.querySelector('input[type="text"]');
+      todos[index].title = todoItem.value;
+      todoItem.disabled = true;
+
+      const editButton = listItem.querySelector('.edit-button');
+      editButton.innerHTML = 'Edit';
+      editButton.removeEventListener('click', () => saveTodoItem(index));
+      editButton.addEventListener('click', () => enableEdit(index));
+
+      saveTodos();
+    }
+
+    // for unique id generation of tasks
+    function generateUniqueId() {
+      return Math.random().toString(36).substr(2, 9);
+    }
+
+    addButton.addEventListener('click', addTodoItem);
+
+    // Load todos on page load
+    loadTodos();
+
+
+  </script>
+
+</body>
+
+</html>
