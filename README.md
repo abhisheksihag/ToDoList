@@ -1,5 +1,4 @@
 # ToDoList-Assignment
 
 
-I was unable to add features- Date Auto Complete and Arrange
-All other features are added.
+I was unable to add features- Date Auto Complete and Arrange.
