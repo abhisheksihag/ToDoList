@@ -16,6 +16,7 @@ function renderTodoList(filteredTodos = todoList) {
 
   filteredTodos.forEach((todo, index) => {
         const listItem = document.createElement('li');
+        listItem.setAttribute('draggable', 'true');
         listItem.innerHTML = `
           <input type="checkbox" ${todo.done ? 'checked' : ''} onclick="toggleDone(${index})">
           <span class="${todo.done ? 'done-task' : ''}" ${!todo.editing ? 'ondblclick="startEditing(event, ' + index + ')"' : ''} ${todo.editing ? 'contenteditable="true" onblur="updateTaskText(event, ' + index + ')"' : ''}>${todo.text}</span>
@@ -148,6 +149,7 @@ const rem_stat=false;
     saveToLocalStorage();
   }
 }
+
 
 function editTodo(index) {
   if (todoList[index].editing) {
@@ -330,13 +332,56 @@ function checkReminders() {
   });
 }
 
-// Call the checkReminders function periodically, e.g., every minute
+
 setInterval(checkReminders, 1000); // 60000 milliseconds = 1 minute
+
 
 
 function saveToLocalStorage() {
   localStorage.setItem('todos', JSON.stringify(todoList));
 }
+
+
+let dragIndex;
+
+function handleDragStart(event) {
+  const target = event.target;
+  if (target.matches('li')) {
+    dragIndex = Array.from(target.parentNode.children).indexOf(target);
+    event.dataTransfer.setData('text/plain', dragIndex);
+  }
+}
+
+function handleDragOver(event) {
+  event.preventDefault();
+}
+
+function handleDrop(event) {
+  const target = event.target.closest('li'); // Find the closest parent <li> element
+  console.log('Drop Event Target:', event.target);
+  console.log('Closest <li> Element:', target);
+
+  try {
+    if (target) {
+      event.preventDefault();
+      const dropIndex = Array.from(target.parentNode.children).indexOf(target);
+      console.log('Drop Index:', dropIndex);
+      moveItem(dragIndex, dropIndex);
+      renderTodoList();
+    }
+  } catch (error) {
+    console.error('Error in handleDrop:', error);
+  }
+}
+
+
+function moveItem(sourceIndex, targetIndex) {
+  const [item] = todoList.splice(sourceIndex-1, 1);
+  todoList.splice(targetIndex-1, 0, item);
+}
+document.addEventListener('dragstart', handleDragStart);
+document.addEventListener('dragover', handleDragOver);
+document.addEventListener('drop', handleDrop);
 
 
 // document.addEventListener("DOMContentLoaded", function () {
