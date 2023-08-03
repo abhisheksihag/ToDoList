@@ -1,4 +1,4 @@
 # ToDoList-Assignment
 
 
-I was unable to add features- Date Auto Complete and Arrange.
+I tried but was unable to add  Date Auto Complete.
