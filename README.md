@@ -1,4 +1,4 @@
 # ToDoList-Assignment
 
 
-I tried but was unable to add  Date Auto Complete.
+This is a To-Do List Application to manage your tasks.
